@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-class PerfilScreen extends StatefulWidget {
-  const PerfilScreen({super.key});
+class PerfilConfigScreen extends StatefulWidget {
+  const PerfilConfigScreen({super.key});
 
   @override
-  State<PerfilScreen> createState() => _PerfilScreenState();
+  State<PerfilConfigScreen> createState() => _PerfilConfigScreenState();
 }
 
-class _PerfilScreenState extends State<PerfilScreen> {
-  // lista de elementos seleccionados
+class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
+  // Lista de elementos seleccionados de forma múltiple
   final List<String> _rolesSeleccionados = [];
-  // lista oficial unach
+
   final List<String> _roles = [
     'Facultad de Ciencias de la Salud',
     'Facultad de Ciencias Jurídicas y Sociales',
@@ -35,10 +35,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
     'Vinculación con el Medio',
   ];
 
-  // continuar flujo
   void _guardarYContinuar() {
     if (_rolesSeleccionados.isNotEmpty) {
-      Navigator.pushReplacementNamed(context, '/introduccion');
+      Navigator.pushReplacementNamed(context, '/perfil');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, selecciona al menos una opción antes de continuar.')),
@@ -46,7 +45,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  // alternar seleccion
   void _alternarSeleccion(String rol) {
     setState(() {
       if (_rolesSeleccionados.contains(rol)) {
@@ -69,7 +67,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
             children: [
               const SizedBox(height: 16),
 
-              // cabecera unach con logo
+              // Cabecera institucional horizontal
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -83,7 +81,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
               const SizedBox(height: 20),
 
-              // tarjeta simulada google user
+              // Tarjeta Google User
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -125,7 +123,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
               const SizedBox(height: 24),
 
-              // titulos instrucciones
               const Text(
                 'Configura tu perfil',
                 style: TextStyle(
@@ -147,7 +144,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
               const SizedBox(height: 16),
 
-              // lista scrolleable de opciones
+              // Lista Scrolleable
               Expanded(
                 child: ListView.builder(
                   itemCount: _roles.length,
@@ -195,7 +192,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 ),
               ),
 
-              // boton continuar abajo fijo
+              // Botón Continuar
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: SizedBox(
