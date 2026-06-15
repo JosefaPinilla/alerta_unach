@@ -11,12 +11,12 @@ class MainLayoutScreen extends StatefulWidget {
 }
 
 class _MainLayoutScreenState extends State<MainLayoutScreen> {
-  int _indiceActual = 2; // Inicia en Perfil
+  int _indiceActual = 0; // Inicia en la pestaña inicio
 
   final List<Widget> _pantallas = [
     const InicioScreen(),
-    const Center(child: Text('Pantalla de Historial')), // Temporal hasta crear historial
-    const PerfilScreen(), // Tu pantalla perfil.dart
+    const Center(child: Text('Pantalla de Historial')), // Temporal
+    const PerfilScreen(),
   ];
 
   @override
