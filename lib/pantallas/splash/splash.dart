@@ -29,17 +29,8 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    // flujo primer ingreso local
-    final prefs = await SharedPreferences.getInstance();
-    final vioOnboarding = prefs.getBool('vio_onboarding') ?? false;
-
-    if (!mounted) return;
-
-    if (vioOnboarding) {
-      Navigator.pushReplacementNamed(context, '/login');
-    } else {
-      Navigator.pushReplacementNamed(context, '/introduccion');
-    }
+    // flujo primer ingreso local temporal
+    Navigator.pushReplacementNamed(context, '/inicio');
   }
 
   @override
