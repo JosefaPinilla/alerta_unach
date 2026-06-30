@@ -6,89 +6,40 @@ class InicioScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 16),
-
-          // Barra superior fija con el logotipo miniatura y la campana de notificaciones
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Image.asset(
-                  'assets/logos/logo-app.png',
-                  height: 35,
-                  width: 35,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.notifications_none_outlined, color: AppTheme.azulOscuro, size: 26),
-                  onPressed: () {
-                    // Acción para ver notificaciones futuras
-                  },
-                ),
-              ],
-            ),
+          _buildEmergencyButton(
+            label: 'SALUD',
+            backgroundColor: AppTheme.azulOscuro,
+            icon: Icons.favorite,
+            onTap: () => _mostrarAlertaSimulada(context, 'Salud'),
           ),
-
-          // Divider sutil debajo de la cabecera
-          const SizedBox(height: 8),
-          Divider(color: Colors.black.withOpacity(0.05), height: 1),
-
-          // Contenedor flexible para los botones grandes centrados
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-
-                  // Botón de SALUD (Azul Marino institucional)
-                  _buildEmergencyButton(
-                    logoPath: 'assets/logos/salud-logo.png',
-                    fallbackIcon: Icons.favorite,
-                    label: 'SALUD',
-                    backgroundColor: AppTheme.azulOscuro,
-                    onTap: () => _mostrarAlertaSimulada(context, 'Salud'),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Botón de BOMBEROS (Rojo Vivo)
-                  _buildEmergencyButton(
-                    logoPath: 'assets/logos/bomberos-logo.png',
-                    fallbackIcon: Icons.local_fire_department,
-                    label: 'BOMBEROS',
-                    backgroundColor: const Color(0xFFFF0000),
-                    onTap: () => _mostrarAlertaSimulada(context, 'Bomberos'),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Botón de SEGURIDAD (Amarillo Alerta)
-                  _buildEmergencyButton(
-                    logoPath: 'assets/logos/seguridad-logo.png',
-                    fallbackIcon: Icons.shield,
-                    label: 'SEGURIDAD',
-                    backgroundColor: const Color(0xFFFFD600),
-                    onTap: () => _mostrarAlertaSimulada(context, 'Seguridad'),
-                  ),
-
-                ],
-              ),
-            ),
+          const SizedBox(height: 24),
+          _buildEmergencyButton(
+            label: 'BOMBEROS',
+            backgroundColor: const Color(0xFFFF0000),
+            icon: Icons.local_fire_department,
+            onTap: () => _mostrarAlertaSimulada(context, 'Bomberos'),
+          ),
+          const SizedBox(height: 24),
+          _buildEmergencyButton(
+            label: 'SEGURIDAD',
+            backgroundColor: const Color(0xFFFFD600),
+            icon: Icons.shield,
+            onTap: () => _mostrarAlertaSimulada(context, 'Seguridad'),
           ),
         ],
       ),
     );
   }
 
-  // Generador de botones de emergencia con sombra suave (BoxShadow) idéntico a tu mockup
   Widget _buildEmergencyButton({
-    required String logoPath,
-    required IconData fallbackIcon,
     required String label,
     required Color backgroundColor,
+    required IconData icon,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -98,11 +49,7 @@ class InicioScreen extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 6)),
         ],
       ),
       child: Material(
@@ -113,17 +60,11 @@ class InicioScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(fallbackIcon, size: 55, color: AppTheme.blanco),
+              Icon(icon, size: 55, color: AppTheme.blanco),
               const SizedBox(height: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  fontFamily: 'Prompt',
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.blanco,
-                  letterSpacing: 1.2,
-                ),
+                style: const TextStyle(fontFamily: 'Prompt', fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.blanco, letterSpacing: 1.2),
               ),
             ],
           ),
@@ -132,11 +73,10 @@ class InicioScreen extends StatelessWidget {
     );
   }
 
-  // Simulación local al presionar un botón
   void _mostrarAlertaSimulada(BuildContext context, String tipo) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Simulación: Alerta de $tipo enviada con éxito.'),
+        content: Text('Simulación: Alerta de $tipo enviada.'),
         backgroundColor: AppTheme.azulOscuro,
         duration: const Duration(seconds: 2),
       ),
