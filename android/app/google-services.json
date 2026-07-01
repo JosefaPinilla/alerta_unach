@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "732036856549",
+    "project_id": "alerta-unach-3b0f5",
+    "storage_bucket": "alerta-unach-3b0f5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:732036856549:android:b176f838016d991d9e320c",
+        "android_client_info": {
+          "package_name": "com.example.alerta_unach"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "732036856549-n5ksoadbao7d2f9l7e0jtvsdbvebgegb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.alerta_unach",
+            "certificate_hash": "d9b0a04261a5811e7207a3c0a69bb00ace3b45f1"
+          }
+        },
+        {
+          "client_id": "732036856549-kkuaujt2768973sjo6nsnvv2kdis4s1d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0FdGrV6hpuJRjJpdQtYdNT3Qw_alxk7U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "732036856549-kkuaujt2768973sjo6nsnvv2kdis4s1d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
