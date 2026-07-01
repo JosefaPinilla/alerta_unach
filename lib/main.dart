@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'pantallas/auth_gate.dart';
 import 'pantallas/splash/splash.dart';
 import 'pantallas/login/login.dart';
-import 'pantallas/perfil/perfil.dart';
+import 'pantallas/main-layout.dart';
+import 'pantallas/introduccion/introduccion.dart';
 import 'pantallas/perfil/perfil-config.dart';
 import 'pantallas/theme/app_theme.dart';
-import 'pantallas/inicio/inicio.dart';
-import 'pantallas/introduccion/introduccion.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const AlertaUnachApp());
 }
 
@@ -19,21 +22,14 @@ class AlertaUnachApp extends StatelessWidget {
     return MaterialApp(
       title: 'Alerta UnACh',
       debugShowCheckedModeBanner: false,
-
-      // tema institucional
       theme: AppTheme.lightTheme,
-
-      // FLUJO REAL: Arranca estrictamente en el Splash Screen
       initialRoute: '/',
-
-      // Mapeo oficial de pantallas de la aplicación
       routes: {
-        '/': (context) => const SplashScreen(),
+        '/': (context) => const AuthGate(),
         '/login': (context) => const LoginScreen(),
         '/introduccion': (context) => const IntroduccionScreen(),
         '/perfil-config': (context) => const PerfilConfigScreen(),
-        '/inicio': (context) => const InicioScreen(), // Contiene la barra integrada abajo
-        '/perfil': (context) => const PerfilScreen(),
+        '/inicio': (context) => const MainLayoutScreen(),
       },
     );
   }
