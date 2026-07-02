@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'database_service.dart';
 import 'login/login.dart';
 import 'splash/splash.dart';
 
@@ -15,11 +16,12 @@ class AuthGate extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-        if (!snapshot.hasData) {
-          return const LoginScreen();
+        if (snapshot.hasData) {
+          DatabaseService().guardarTokenDispositivo();
+          return const SplashScreen();
         }
 
-        return const SplashScreen();
+        return const LoginScreen();
       },
     );
   }

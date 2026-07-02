@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'theme/app_theme.dart';
 import 'inicio/inicio.dart';
 import 'perfil/perfil.dart';
 import 'historial/historial.dart';
+import 'alerta_detalle.dart';
 
 class MainLayoutScreen extends StatefulWidget {
   const MainLayoutScreen({super.key});
@@ -13,12 +16,36 @@ class MainLayoutScreen extends StatefulWidget {
 
 class _MainLayoutScreenState extends State<MainLayoutScreen> {
   int _indiceActual = 0;
+  bool _mostrandoAlerta = false;
 
   final List<Widget> _pantallas = [
     const InicioScreen(),
     const HistorialScreen(),
     const PerfilScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+
+    FirebaseFirestore.instance
+        .collection('alertas')
+        .where('estado', isEqualTo: 'activa')
+        .where('usuarioId', isNotEqualTo: user?.uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.isNotEmpty && mounted && !_mostrandoAlerta) {
+        setState(() => _mostrandoAlerta = true);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AlertaDetalleScreen(alerta: snapshot.docs.first),
+          ),
+        ).then((_) => setState(() => _mostrandoAlerta = false));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

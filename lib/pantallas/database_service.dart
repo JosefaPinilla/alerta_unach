@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:geolocator/geolocator.dart';
 
 class DatabaseService {
@@ -16,6 +17,16 @@ class DatabaseService {
       'perfilConfigurado': false,
       'fechaCreacion': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<void> guardarTokenDispositivo() async {
+    String? token = await FirebaseMessaging.instance.getToken();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && token != null) {
+      await _db.collection('usuarios').doc(user.uid).update({
+        'fcmToken': token,
+      });
+    }
   }
 
   Future<DocumentSnapshot> obtenerUsuario(String uid) async {
@@ -46,12 +57,16 @@ class DatabaseService {
         lon = 0.0;
       }
 
+      final userData = await obtenerUsuario(user.uid);
+      final data = userData.data() as Map<String, dynamic>;
+
       await _db.collection('alertas').add({
         'usuarioId': user.uid,
         'nombreUsuario': user.displayName ?? 'Anónimo',
+        'facultad': data['facultades']?.isNotEmpty == true ? data['facultades'][0] : 'Sin Facultad',
         'tipo': tipo,
         'timestamp': FieldValue.serverTimestamp(),
-        'estado': 'pendiente',
+        'estado': 'activa',
         'latitud': lat,
         'longitud': lon,
       });
