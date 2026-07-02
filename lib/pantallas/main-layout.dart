@@ -6,6 +6,7 @@ import 'inicio/inicio.dart';
 import 'perfil/perfil.dart';
 import 'historial/historial.dart';
 import 'alerta_detalle.dart';
+import 'historial/notificaciones.dart';
 
 class MainLayoutScreen extends StatefulWidget {
   const MainLayoutScreen({super.key});
@@ -17,6 +18,7 @@ class MainLayoutScreen extends StatefulWidget {
 class _MainLayoutScreenState extends State<MainLayoutScreen> {
   int _indiceActual = 0;
   bool _mostrandoAlerta = false;
+  bool _alertaYaProcesada = false;
 
   final List<Widget> _pantallas = [
     const InicioScreen(),
@@ -35,14 +37,19 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         .where('usuarioId', isNotEqualTo: user?.uid)
         .snapshots()
         .listen((snapshot) {
-      if (snapshot.docs.isNotEmpty && mounted && !_mostrandoAlerta) {
+      if (snapshot.docs.isNotEmpty && mounted && !_mostrandoAlerta && !_alertaYaProcesada) {
+        final alerta = snapshot.docs.first;
+        _alertaYaProcesada = true;
         setState(() => _mostrandoAlerta = true);
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AlertaDetalleScreen(alerta: snapshot.docs.first),
+            builder: (context) => AlertaDetalleScreen(alerta: alerta),
           ),
-        ).then((_) => setState(() => _mostrandoAlerta = false));
+        ).then((_) {
+          setState(() => _mostrandoAlerta = false);
+          _alertaYaProcesada = false;
+        });
       }
     });
   }
@@ -63,7 +70,12 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_outlined, color: AppTheme.azulOscuro, size: 26),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificacionesScreen()),
+              );
+            },
           ),
           const SizedBox(width: 12),
         ],

@@ -94,29 +94,23 @@ class AlertaDetalleScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  if (esAutor && !finalizado)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF001F3F), foregroundColor: Colors.white),
-                        onPressed: () {
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: esAutor && !finalizado ? const Color(0xFF001F3F) : Colors.grey.shade200,
+                          foregroundColor: esAutor && !finalizado ? Colors.white : Colors.black
+                      ),
+                      onPressed: () {
+                        if (esAutor && !finalizado) {
                           alerta.reference.update({'estado': 'finalizado'});
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Finalizar Emergencia"),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade200, foregroundColor: Colors.black),
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text("Volver"),
-                      ),
+                        }
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(esAutor && !finalizado ? "Finalizar Emergencia" : "Volver"),
                     ),
+                  ),
                 ],
               ),
             ),

@@ -14,13 +14,13 @@ class HistorialScreen extends StatefulWidget {
 }
 
 class _HistorialScreenState extends State<HistorialScreen> {
-  String _filtroTipo = 'Todas';
+  String _filtroTipo = 'Mis alertas';
   final user = FirebaseAuth.instance.currentUser;
 
   Stream<QuerySnapshot> _obtenerStream() {
     Query query = FirebaseFirestore.instance.collection('alertas').orderBy('timestamp', descending: true);
 
-    if (_filtroTipo == 'Mis alarmas') {
+    if (_filtroTipo == 'Mis alertas') {
       query = query.where('usuarioId', isEqualTo: user?.uid);
     } else if (_filtroTipo == 'Externas') {
       query = query.where('usuarioId', isNotEqualTo: user?.uid);
@@ -38,7 +38,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.all(10),
           child: Row(
-            children: ['Todas', 'Mis alarmas', 'Externas', 'Salud', 'Bomberos', 'Seguridad'].map((filtro) {
+            children: ['Todas', 'Mis alertas', 'Externas', 'Salud', 'Bomberos', 'Seguridad'].map((filtro) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: FilterChip(
