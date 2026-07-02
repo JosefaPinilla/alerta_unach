@@ -1,22 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../database_service.dart';
 
-class HistorialScreen extends StatelessWidget {
+class HistorialScreen extends StatefulWidget {
   const HistorialScreen({super.key});
+
+  @override
+  State<HistorialScreen> createState() => _HistorialScreenState();
+}
+
+class _HistorialScreenState extends State<HistorialScreen> {
+  String _filtroTipo = 'Todas';
+  final user = FirebaseAuth.instance.currentUser;
+
+  Stream<QuerySnapshot> _obtenerStream() {
+    Query query = FirebaseFirestore.instance.collection('alertas').orderBy('timestamp', descending: true);
+
+    if (_filtroTipo == 'Mis alarmas') {
+      query = query.where('usuarioId', isEqualTo: user?.uid);
+    } else if (_filtroTipo == 'Externas') {
+      query = query.where('usuarioId', isNotEqualTo: user?.uid);
+    } else if (_filtroTipo != 'Todas') {
+      query = query.where('tipo', isEqualTo: _filtroTipo);
+    }
+    return query.snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            children: ['Todas', 'Mis alarmas', 'Externas', 'Salud', 'Bomberos', 'Seguridad'].map((filtro) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: FilterChip(
+                  label: Text(filtro),
+                  selected: _filtroTipo == filtro,
+                  onSelected: (bool selected) => setState(() => _filtroTipo = filtro),
+                  selectedColor: AppTheme.azulOscuro.withOpacity(0.2),
+                  checkmarkColor: AppTheme.azulOscuro,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
         Expanded(
           child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('alertas')
-                .orderBy('timestamp', descending: true)
-                .snapshots(),
+            stream: _obtenerStream(),
             builder: (context, snapshot) {
               if (snapshot.hasError) return const Center(child: Text('Error al cargar'));
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -24,6 +61,7 @@ class HistorialScreen extends StatelessWidget {
               }
 
               final docs = snapshot.data!.docs;
+              if (docs.isEmpty) return const Center(child: Text('No hay alertas disponibles'));
 
               return ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -42,7 +80,7 @@ class HistorialScreen extends StatelessWidget {
                   Color color;
                   if (tipo == 'Salud') color = AppTheme.azulOscuro;
                   else if (tipo == 'Bomberos') color = Colors.red;
-                  else color = Colors.amber;
+                  else color = Colors.amber.shade700;
 
                   return _buildAlertCard(tipo, autor, fecha, color, finalizado, docId);
                 },
