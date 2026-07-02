@@ -31,7 +31,7 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         centerTitle: false,
         title: Padding(
           padding: const EdgeInsets.only(left: 10.0),
-          child: Image.asset('assets/logos/logo-horizontal.png', height: 70, width: 70),
+          child: Image.asset('assets/logos/logo-horizontal.png', height: 50, fit: BoxFit.contain,),
         ),
         actions: [
           IconButton(

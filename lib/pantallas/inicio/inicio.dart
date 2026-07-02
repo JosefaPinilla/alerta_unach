@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../database_service.dart';
 
 class InicioScreen extends StatelessWidget {
   const InicioScreen({super.key});
@@ -15,21 +16,21 @@ class InicioScreen extends StatelessWidget {
             label: 'SALUD',
             backgroundColor: AppTheme.azulOscuro,
             icon: Icons.favorite,
-            onTap: () => _mostrarAlertaSimulada(context, 'Salud'),
+            onTap: () => _enviarAlerta(context, 'Salud'),
           ),
           const SizedBox(height: 24),
           _buildEmergencyButton(
             label: 'BOMBEROS',
             backgroundColor: const Color(0xFFFF0000),
             icon: Icons.local_fire_department,
-            onTap: () => _mostrarAlertaSimulada(context, 'Bomberos'),
+            onTap: () => _enviarAlerta(context, 'Bomberos'),
           ),
           const SizedBox(height: 24),
           _buildEmergencyButton(
             label: 'SEGURIDAD',
             backgroundColor: const Color(0xFFFFD600),
             icon: Icons.shield,
-            onTap: () => _mostrarAlertaSimulada(context, 'Seguridad'),
+            onTap: () => _enviarAlerta(context, 'Seguridad'),
           ),
         ],
       ),
@@ -73,13 +74,17 @@ class InicioScreen extends StatelessWidget {
     );
   }
 
-  void _mostrarAlertaSimulada(BuildContext context, String tipo) {
+  Future<void> _enviarAlerta(BuildContext context, String tipo) async {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Simulación: Alerta de $tipo enviada.'),
-        backgroundColor: AppTheme.azulOscuro,
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text('Enviando alerta de $tipo...'), backgroundColor: Colors.orange),
+    );
+
+    await DatabaseService().registrarAlerta(tipo);
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Alerta de $tipo enviada correctamente.'), backgroundColor: Colors.green),
     );
   }
 }

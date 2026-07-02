@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'pantallas/auth_gate.dart';
-import 'pantallas/splash/splash.dart';
 import 'pantallas/login/login.dart';
 import 'pantallas/main-layout.dart';
 import 'pantallas/introduccion/introduccion.dart';
