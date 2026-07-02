@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'theme/app_theme.dart';
 import 'inicio/inicio.dart';
 import 'perfil/perfil.dart';
 import 'historial/historial.dart';
+import 'alerta_detalle.dart';
+import 'historial/notificaciones.dart';
 
 class MainLayoutScreen extends StatefulWidget {
   const MainLayoutScreen({super.key});
@@ -13,12 +17,42 @@ class MainLayoutScreen extends StatefulWidget {
 
 class _MainLayoutScreenState extends State<MainLayoutScreen> {
   int _indiceActual = 0;
+  bool _mostrandoAlerta = false;
+  bool _alertaYaProcesada = false;
 
   final List<Widget> _pantallas = [
     const InicioScreen(),
     const HistorialScreen(),
     const PerfilScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+
+    FirebaseFirestore.instance
+        .collection('alertas')
+        .where('estado', isEqualTo: 'activa')
+        .where('usuarioId', isNotEqualTo: user?.uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.docs.isNotEmpty && mounted && !_mostrandoAlerta && !_alertaYaProcesada) {
+        final alerta = snapshot.docs.first;
+        _alertaYaProcesada = true;
+        setState(() => _mostrandoAlerta = true);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AlertaDetalleScreen(alerta: alerta),
+          ),
+        ).then((_) {
+          setState(() => _mostrandoAlerta = false);
+          _alertaYaProcesada = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +65,17 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
         centerTitle: false,
         title: Padding(
           padding: const EdgeInsets.only(left: 10.0),
-          child: Image.asset('assets/logos/logo-horizontal.png', height: 70, width: 70),
+          child: Image.asset('assets/logos/logo-horizontal.png', height: 50, fit: BoxFit.contain,),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_outlined, color: AppTheme.azulOscuro, size: 26),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NotificacionesScreen()),
+              );
+            },
           ),
           const SizedBox(width: 12),
         ],

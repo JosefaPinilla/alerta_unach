@@ -37,11 +37,17 @@ class _IntroduccionScreenState extends State<IntroduccionScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () => Navigator.pushReplacementNamed(context, '/inicio'),
-                child: const Text('Omitir', style: TextStyle(color: Colors.black54)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Image.asset('assets/logos/logo-horizontal.png', height: 50, fit: BoxFit.contain),
+                  TextButton(
+                    onPressed: () => Navigator.pushReplacementNamed(context, '/inicio'),
+                    child: const Text('Omitir', style: TextStyle(color: Colors.black54)),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -70,7 +76,6 @@ class _IntroduccionScreenState extends State<IntroduccionScreen> {
                 },
               ),
             ),
-            // Indicadores y botón
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(

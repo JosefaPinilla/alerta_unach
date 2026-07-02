@@ -1,92 +1,142 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
+import '../database_service.dart';
+import '../alerta_detalle.dart';
 
-class HistorialScreen extends StatelessWidget {
+class HistorialScreen extends StatefulWidget {
   const HistorialScreen({super.key});
+
+  @override
+  State<HistorialScreen> createState() => _HistorialScreenState();
+}
+
+class _HistorialScreenState extends State<HistorialScreen> {
+  String _filtroTipo = 'Mis alertas';
+  final user = FirebaseAuth.instance.currentUser;
+
+  Stream<QuerySnapshot> _obtenerStream() {
+    Query query = FirebaseFirestore.instance.collection('alertas').orderBy('timestamp', descending: true);
+
+    if (_filtroTipo == 'Mis alertas') {
+      query = query.where('usuarioId', isEqualTo: user?.uid);
+    } else if (_filtroTipo == 'Externas') {
+      query = query.where('usuarioId', isNotEqualTo: user?.uid);
+    } else if (_filtroTipo != 'Todas') {
+      query = query.where('tipo', isEqualTo: _filtroTipo);
+    }
+    return query.snapshots();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Cabecera propia del historial
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Buscar por usuario o tipo...',
-              prefixIcon: const Icon(Icons.search, color: Colors.black45),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            ),
-          ),
-        ),
-
-        // Filtros (Mockup)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.all(10),
           child: Row(
-            children: [
-              _buildFilterChip('Todas', true),
-              _buildFilterChip('Salud', false),
-              _buildFilterChip('Bomberos', false),
-              _buildFilterChip('Seguridad', false),
-            ],
+            children: ['Todas', 'Mis alertas', 'Externas', 'Salud', 'Bomberos', 'Seguridad'].map((filtro) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: FilterChip(
+                  label: Text(filtro),
+                  selected: _filtroTipo == filtro,
+                  onSelected: (bool selected) => setState(() => _filtroTipo = filtro),
+                  selectedColor: AppTheme.azulOscuro.withOpacity(0.2),
+                  checkmarkColor: AppTheme.azulOscuro,
+                ),
+              );
+            }).toList(),
           ),
         ),
-        const SizedBox(height: 16),
-
-        // Lista de alertas
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            children: [
-              _buildAlertCard('Salud', 'Juan Pérez', '05 Jun 2026, 10:45 AM', AppTheme.azulOscuro, true),
-              _buildAlertCard('Bomberos', 'María García', '05 Jun 2026, 11:20 AM', Colors.red, false),
-              _buildAlertCard('Seguridad', 'Carlos Ruíz', '04 Jun 2026, 09:15 PM', Colors.amber, true),
-              const SizedBox(height: 20),
-              const Center(child: Text('FIN DEL HISTORIAL', style: TextStyle(fontFamily: 'Prompt', color: Colors.black26, fontSize: 10))),
-              const SizedBox(height: 20),
-            ],
+          child: StreamBuilder<QuerySnapshot>(
+            stream: _obtenerStream(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return const Center(child: Text('Error al cargar'));
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final docs = snapshot.data!.docs;
+              if (docs.isEmpty) return const Center(child: Text('No hay alertas disponibles'));
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                itemCount: docs.length,
+                itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+                  final doc = docs[index];
+                  final tipo = data['tipo'] ?? 'Desconocido';
+                  final autor = data['nombreUsuario'] ?? 'Anónimo';
+                  final timestamp = (data['timestamp'] as Timestamp?)?.toDate();
+                  final fecha = timestamp != null
+                      ? DateFormat('dd MMM yyyy, hh:mm a').format(timestamp)
+                      : 'Sin fecha';
+                  final finalizado = data['estado'] == 'finalizado';
+
+                  Color color;
+                  if (tipo == 'Salud') color = AppTheme.azulOscuro;
+                  else if (tipo == 'Bomberos') color = Colors.red;
+                  else color = Colors.amber.shade700;
+
+                  return InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AlertaDetalleScreen(alerta: doc)),
+                    ),
+                    child: _buildAlertCard(tipo, autor, fecha, color, finalizado, doc.id),
+                  );
+                },
+              );
+            },
           ),
         ),
       ],
     );
   }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? AppTheme.azulOscuro : Colors.black12,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontWeight: FontWeight.w500)),
-    );
-  }
-
-  Widget _buildAlertCard(String tipo, String autor, String fecha, Color color, bool finalizado) {
+  Widget _buildAlertCard(String tipo, String autor, String fecha, Color color, bool finalizado, String docId) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border(left: BorderSide(color: color, width: 4))),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border(left: BorderSide(color: color, width: 4))
+      ),
       child: Row(
         children: [
           Icon(tipo == 'Salud' ? Icons.medical_services : tipo == 'Bomberos' ? Icons.fire_truck : Icons.security, color: color),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                Text(tipo, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(4)), child: Text(finalizado ? 'FINALIZADO' : 'EN PROCESO', style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold)))
-              ]),
-              Text('Reportado por: $autor', style: const TextStyle(fontSize: 12, color: Colors.black54)),
-              Text(fecha, style: const TextStyle(fontSize: 11, color: Colors.black45)),
-            ]),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(tipo, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                            child: Text(finalizado ? 'FINALIZADO' : 'EN PROCESO', style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold))
+                        )
+                      ]
+                  ),
+                  Text('Reportado por: $autor', style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  Text(fecha, style: const TextStyle(fontSize: 11, color: Colors.black45)),
+                ]
+            ),
           ),
-          const Icon(Icons.chevron_right, color: Colors.black26),
+          if (!finalizado)
+            IconButton(
+              icon: Icon(Icons.check_circle_outline, color: color),
+              onPressed: () => DatabaseService().finalizarAlerta(docId),
+            ),
         ],
       ),
     );

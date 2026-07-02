@@ -13,43 +13,43 @@ class PerfilConfigScreen extends StatefulWidget {
 class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
   final List<String> _rolesSeleccionados = [];
   final List<String> _roles = [
-    'Facultad de Ciencias de la Salud',
-    'Facultad de Ciencias Jurídicas y Sociales',
-    'Facultad de Educación',
-    'Facultad de Ingeniería y Negocios',
-    'Facultad de Teología',
-    'Admisión',
-    'Apoyo Integral al Estudiante',
-    'Biblioteca',
-    'Bienestar Estudiantil',
-    'Comunicaciones',
-    'Docencia',
-    'Educación Continua',
-    'Equidad e Inclusión',
-    'Investigación',
-    'Pastoral e Identidad Universitaria',
-    'Planificación y Aseguramiento de la Calidad',
-    'Posgrado',
-    'Proyectos y Emprendimiento',
-    'Servicios Estudiantiles',
-    'Vinculación con el Medio',
+    'Facultad de Ciencias de la Salud', 'Facultad de Ciencias Jurídicas y Sociales',
+    'Facultad de Educación', 'Facultad de Ingeniería y Negocios', 'Facultad de Teología',
+    'Admisión', 'Apoyo Integral al Estudiante', 'Biblioteca', 'Bienestar Estudiantil',
+    'Comunicaciones', 'Docencia', 'Educación Continua', 'Equidad e Inclusión',
+    'Investigación', 'Pastoral e Identidad Universitaria', 'Planificación y Aseguramiento de la Calidad',
+    'Posgrado', 'Proyectos y Emprendimiento', 'Servicios Estudiantiles', 'Vinculación con el Medio',
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _cargarRolesActuales();
+  }
+
+  Future<void> _cargarRolesActuales() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final doc = await FirebaseFirestore.instance.collection('usuarios').doc(user?.uid).get();
+    if (doc.exists && doc.data()!.containsKey('facultades')) {
+      setState(() {
+        _rolesSeleccionados.addAll(List<String>.from(doc.data()!['facultades']));
+      });
+    }
+  }
+
   Future<void> _guardarYContinuar() async {
-    if (_rolesSeleccionados.isNotEmpty) {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).update({
-          'roles': _rolesSeleccionados,
-          'perfilConfigurado': true,
-        });
-      }
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/introduccion');
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('usuarios').doc(user.uid).update({
+        'facultades': _rolesSeleccionados,
+        'perfilConfigurado': true,
+      });
+    }
+    if (!mounted) return;
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Selecciona al menos una opción')),
-      );
+      Navigator.pushReplacementNamed(context, '/introduccion');
     }
   }
 
@@ -74,34 +74,29 @@ class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Image.asset('assets/logos/logo-horizontal.png', height: 35, fit: BoxFit.contain),
-                  Icon(Icons.shield_outlined, color: AppTheme.azulOscuro.withOpacity(0.7)),
-                ],
-              ),
               const SizedBox(height: 20),
+              Image.asset('assets/logos/logo-horizontal.png', height: 50, fit: BoxFit.contain),
+              const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(color: const Color(0xFFF8F9FA), borderRadius: BorderRadius.circular(12)),
                 child: Row(
                   children: [
-                    const CircleAvatar(radius: 24, backgroundColor: AppTheme.azulClaro, child: Icon(Icons.person, color: AppTheme.blanco)),
+                    CircleAvatar(radius: 20, backgroundImage: NetworkImage(user?.photoURL ?? '')),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(user?.displayName ?? 'Usuario', style: const TextStyle(fontFamily: 'Prompt', fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.azulOscuro)),
-                        Text(user?.email ?? '', style: TextStyle(fontFamily: 'Prompt', fontSize: 13, color: AppTheme.azulOscuro.withOpacity(0.6))),
+                        Text(user?.displayName ?? 'Usuario', style: const TextStyle(fontWeight: FontWeight.w600)),
+                        Text(user?.email ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text('Configura tu perfil', style: TextStyle(fontFamily: 'Prompt', fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.azulOscuro)),
+              const SizedBox(height: 20),
+              const Text('Configura tu perfil', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('Selecciona las facultades o áreas a las que perteneces para recibir alertas.', style: TextStyle(fontSize: 12, color: Colors.grey)),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView.builder(
@@ -113,50 +108,28 @@ class _PerfilConfigScreenState extends State<PerfilConfigScreen> {
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: InkWell(
                         onTap: () => _alternarSeleccion(rol),
-                        borderRadius: BorderRadius.circular(8),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            border: Border.all(color: esSeleccionado ? AppTheme.azulOscuro : Colors.black12, width: esSeleccionado ? 2 : 1),
+                            border: Border.all(color: esSeleccionado ? AppTheme.azulOscuro : Colors.black12),
                             borderRadius: BorderRadius.circular(8),
-                            color: esSeleccionado ? AppTheme.azulClaro.withOpacity(0.05) : AppTheme.blanco,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(child: Text(rol, style: TextStyle(fontFamily: 'Prompt', fontSize: 13.5, fontWeight: esSeleccionado ? FontWeight.w600 : FontWeight.w400, color: AppTheme.azulOscuro))),
-                              if (esSeleccionado) const Icon(Icons.check_circle, color: AppTheme.azulOscuro, size: 20),
-                            ],
-                          ),
+                          child: Text(rol, style: TextStyle(fontSize: 13, fontWeight: esSeleccionado ? FontWeight.w600 : FontWeight.w400)),
                         ),
                       ),
                     );
                   },
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _guardarYContinuar,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.azulOscuro,
-                      foregroundColor: AppTheme.blanco,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Continuar', style: TextStyle(fontFamily: 'Prompt', fontSize: 15, fontWeight: FontWeight.w600)),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward, size: 18),
-                      ],
-                    ),
-                  ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _guardarYContinuar,
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.azulOscuro, padding: const EdgeInsets.symmetric(vertical: 16)),
+                  child: const Text('Continuar', style: TextStyle(color: Colors.white)),
                 ),
               ),
+              const SizedBox(height: 10),
             ],
           ),
         ),
