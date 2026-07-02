@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AlertaDetalleScreen extends StatelessWidget {
   final DocumentSnapshot alerta;
 
   const AlertaDetalleScreen({super.key, required this.alerta});
+
+  Future<void> _abrirMapa(String lat, String lng) async {
+    final Uri url = Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$lng");
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +22,8 @@ class AlertaDetalleScreen extends StatelessWidget {
     final data = alerta.data() as Map<String, dynamic>;
     final tipo = data['tipo'] ?? 'Emergencia';
     final nombreUsuario = data['nombreUsuario'] ?? 'Usuario';
-    final lugar = data['lugar'] ?? 'Ubicación no especificada';
+    final lat = data['latitud']?.toString() ?? '0.0';
+    final lng = data['longitud']?.toString() ?? '0.0';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -63,11 +72,25 @@ class AlertaDetalleScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Container(
-                    height: 150,
-                    width: double.infinity,
-                    decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(12)),
-                    child: const Center(child: Icon(Icons.map, size: 50, color: Colors.black26)),
+                  GestureDetector(
+                    onTap: () => _abrirMapa(lat, lng),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(12)),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.map, color: Colors.blue, size: 30),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("UBICACIÓN (Presiona para abrir)", style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.blue)),
+                              Text("$lat, $lng", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 40),
                   SizedBox(
@@ -76,8 +99,6 @@ class AlertaDetalleScreen extends StatelessWidget {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF001F3F), foregroundColor: Colors.white),
                       onPressed: () {
-                        // AQUÍ ESTÁ LA SEGURIDAD: Solo si eres autor, intentas escribir.
-                        // Si no eres autor, la app solo te saca de la pantalla.
                         if (esAutor) {
                           alerta.reference.update({'estado': 'finalizado'});
                         }
