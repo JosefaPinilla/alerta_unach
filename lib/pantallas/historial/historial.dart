@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../database_service.dart';
+import '../alerta_detalle.dart';
 
 class HistorialScreen extends StatefulWidget {
   const HistorialScreen({super.key});
@@ -68,7 +69,7 @@ class _HistorialScreenState extends State<HistorialScreen> {
                 itemCount: docs.length,
                 itemBuilder: (context, index) {
                   final data = docs[index].data() as Map<String, dynamic>;
-                  final docId = docs[index].id;
+                  final doc = docs[index];
                   final tipo = data['tipo'] ?? 'Desconocido';
                   final autor = data['nombreUsuario'] ?? 'Anónimo';
                   final timestamp = (data['timestamp'] as Timestamp?)?.toDate();
@@ -82,7 +83,13 @@ class _HistorialScreenState extends State<HistorialScreen> {
                   else if (tipo == 'Bomberos') color = Colors.red;
                   else color = Colors.amber.shade700;
 
-                  return _buildAlertCard(tipo, autor, fecha, color, finalizado, docId);
+                  return InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AlertaDetalleScreen(alerta: doc)),
+                    ),
+                    child: _buildAlertCard(tipo, autor, fecha, color, finalizado, doc.id),
+                  );
                 },
               );
             },

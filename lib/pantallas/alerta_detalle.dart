@@ -24,6 +24,7 @@ class AlertaDetalleScreen extends StatelessWidget {
     final nombreUsuario = data['nombreUsuario'] ?? 'Usuario';
     final lat = data['latitud']?.toString() ?? '0.0';
     final lng = data['longitud']?.toString() ?? '0.0';
+    final bool finalizado = data['estado'] == 'finalizado';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -37,7 +38,7 @@ class AlertaDetalleScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.warning_amber_rounded, color: Colors.white, size: 28),
                   SizedBox(width: 8),
-                  Text("Nueva Alerta de Emergencia", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                  Text("Detalle de Emergencia", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
                 ],
               ),
             ),
@@ -51,8 +52,6 @@ class AlertaDetalleScreen extends StatelessWidget {
                     decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(4)),
                     child: Text(tipo.toUpperCase(), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
-                  const SizedBox(height: 16),
-                  const Text("Se ha registrado una emergencia dentro de tu grupo institucional.", style: TextStyle(fontSize: 16)),
                   const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(16),
@@ -81,32 +80,43 @@ class AlertaDetalleScreen extends StatelessWidget {
                         children: [
                           const Icon(Icons.map, color: Colors.blue, size: 30),
                           const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text("UBICACIÓN (Presiona para abrir)", style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.blue)),
-                              Text("$lat, $lng", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("UBICACIÓN (Presiona para abrir Google Maps)", style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.blue)),
+                                Text("$lat, $lng", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
                   const SizedBox(height: 40),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF001F3F), foregroundColor: Colors.white),
-                      onPressed: () {
-                        if (esAutor) {
+                  if (esAutor && !finalizado)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF001F3F), foregroundColor: Colors.white),
+                        onPressed: () {
                           alerta.reference.update({'estado': 'finalizado'});
-                        }
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Entendido"),
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Finalizar Emergencia"),
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.grey.shade200, foregroundColor: Colors.black),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text("Volver"),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
